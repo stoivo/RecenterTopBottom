@@ -1,5 +1,6 @@
 import sublime
-import sublime_plugin
+
+from sublime_plugin import TextCommand, EventListener
 from itertools import cycle
 
 settings = sublime.load_settings('RecenterTopBottom.sublime-settings')
@@ -8,6 +9,7 @@ settings = sublime.load_settings('RecenterTopBottom.sublime-settings')
 class Pref:
     def load(self):
         Pref.positions = settings.get('recenter_positions', ['top', 'middle', 'bottom'])
+
 Pref = Pref()
 Pref.load()
 settings.add_on_change('reload', lambda: Pref.load())
@@ -16,14 +18,14 @@ settings.add_on_change('reload', lambda: Pref.load())
 POSNS = cycle(Pref.positions)
 
 
-class CaretWatcher(sublime_plugin.EventListener):
+class CaretWatcher(EventListener):
     def on_selection_modified(self, view):
         # caret has moved, reset positions to their default value
         global POSNS
         POSNS = cycle(Pref.positions)
 
 
-class RecenterTopBottomCommand(sublime_plugin.TextCommand):
+class RecenterTopBottomCommand(TextCommand):
     def run(self, edit):
         posn = next(POSNS)
         if posn == 'top':
